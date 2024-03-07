@@ -1,7 +1,8 @@
-package api
+package gobufrkit
 
 import (
 	"fmt"
+	"github.com/tlarsendataguy/gobufrkit/api"
 	"github.com/tlarsendataguy/gobufrkit/bufr"
 	"github.com/tlarsendataguy/gobufrkit/deserialize"
 	"github.com/tlarsendataguy/gobufrkit/tdcfio"
@@ -29,14 +30,14 @@ func (c *Config) toDeserializeConfig() *deserialize.Config {
 
 type Runtime struct {
 	config   *Config
-	scriptRt *ScriptRt
+	scriptRt *api.ScriptRt
 }
 
 func NewRuntime(config *Config, pr tdcfio.PeekableReader) (*Runtime, error) {
 
 	factory := deserialize.NewDefaultFactory(config.toDeserializeConfig(), pr)
 
-	scriptRt := NewScriptRt(config.DefinitionsPath, factory)
+	scriptRt := api.NewScriptRt(config.DefinitionsPath, factory)
 	if err := scriptRt.Initialize(); err != nil {
 		return nil, fmt.Errorf("cannot initialise script runtime: %w", err)
 	}
