@@ -1,112 +1,143 @@
 package tdcfio_test
 
 import (
-    "testing"
-    assert2 "github.com/seanpont/assert"
-    "gobufrkit/tdcfio"
-    "os"
+	"github.com/tlarsendataguy/gobufrkit/tdcfio"
+	"os"
+	"testing"
 )
 
 func TestBitReader(t *testing.T) {
-    assert := assert2.Assert(t)
+	var (
+		err error
+		b   []byte
+		u   uint
+		i   int
+		q   bool
+		s   *tdcfio.Binary
+	)
 
-    var (
-        err error
-        b []byte
-        u uint
-        i int
-        q bool
-        s *tdcfio.Binary
-    )
+	f, err := os.Open("../_testdata/contrived.bufr")
+	defer f.Close()
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	r := tdcfio.NewBitReader(f)
+	b, err = r.ReadBytes(4)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, string(b), "BUFR")
 
-    f, err := os.Open("../_testdata/contrived.bufr")
-    defer f.Close()
-    assert.Nil(err)
-    r := tdcfio.NewBitReader(f)
-    b, err = r.ReadBytes(4)
-    assert.Nil(err)
-    assert.Equal(string(b), "BUFR")
+	u, err = r.ReadUint(24)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(94))
 
-    u, err = r.ReadUint(24)
-    assert.Nil(err)
-    assert.Equal(u, uint(94))
+	i, err = r.ReadInt(8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, i, 4)
 
-    i, err = r.ReadInt(8)
-    assert.Nil(err)
-    assert.Equal(i, 4)
+	r.ReadUint(24)
+	r.ReadUint(8)
+	r.ReadUint(16)
+	r.ReadUint(16)
+	r.ReadUint(8)
 
-    r.ReadUint(24)
-    r.ReadUint(8)
-    r.ReadUint(16)
-    r.ReadUint(16)
-    r.ReadUint(8)
+	q, err = r.ReadBool()
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	if q {
+		t.Fatalf(`value should be false`)
+	}
 
-    q, err = r.ReadBool()
-    assert.Nil(err)
-    assert.False(q, "value should be false")
-
-    s, err = r.ReadBinary(7)
-    assert.Nil(err)
-    assert.Equal(s.String(), "0000000")
+	s, err = r.ReadBinary(7)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, s.String(), "0000000")
 }
 
 func TestPeekableBitReader(t *testing.T) {
-    assert := assert2.Assert(t)
+	var (
+		err error
+		b   []byte
+		u   uint
+		i   int
+		q   bool
+		s   *tdcfio.Binary
+	)
 
-    var (
-        err error
-        b []byte
-        u uint
-        i int
-        q bool
-        s *tdcfio.Binary
-    )
+	f, err := os.Open("../_testdata/contrived.bufr")
+	defer f.Close()
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	r := tdcfio.NewPeekableBitReader(f)
 
-    f, err := os.Open("../_testdata/contrived.bufr")
-    defer f.Close()
-    assert.Nil(err)
-    r := tdcfio.NewPeekableBitReader(f)
+	b, err = r.PeekBytes(0, 4)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, string(b), "BUFR")
 
-    b, err = r.PeekBytes(0, 4)
-    assert.Nil(err)
-    assert.Equal(string(b), "BUFR")
+	u, err = r.PeekUint(8, 24)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(22))
 
-    u, err = r.PeekUint(8, 24)
-    assert.Nil(err)
-    assert.Equal(u, uint(22))
+	b, err = r.ReadBytes(4)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, string(b), "BUFR")
 
-    b, err = r.ReadBytes(4)
-    assert.Nil(err)
-    assert.Equal(string(b), "BUFR")
+	u, err = r.ReadUint(24)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(94))
 
-    u, err = r.ReadUint(24)
-    assert.Nil(err)
-    assert.Equal(u, uint(94))
+	i, err = r.ReadInt(8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, i, 4)
 
-    i, err = r.ReadInt(8)
-    assert.Nil(err)
-    assert.Equal(i, 4)
+	r.ReadUint(24)
+	r.ReadUint(8)
+	r.ReadUint(16)
+	r.ReadUint(16)
+	r.ReadUint(8)
 
-    r.ReadUint(24)
-    r.ReadUint(8)
-    r.ReadUint(16)
-    r.ReadUint(16)
-    r.ReadUint(8)
+	u, err = r.PeekUint(4, 8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(18))
 
-    u, err = r.PeekUint(4, 8)
-    assert.Nil(err)
-    assert.Equal(u, uint(18))
+	q, err = r.ReadBool()
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	if q {
+		t.Fatalf(`value should be false`)
+	}
 
-    q, err = r.ReadBool()
-    assert.Nil(err)
-    assert.False(q, "value should be false")
+	s, err = r.ReadBinary(7)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, s.String(), "0000000")
 
-    s, err = r.ReadBinary(7)
-    assert.Nil(err)
-    assert.Equal(s.String(), "0000000")
-
-    u, err = r.PeekUint(7, 8)
-    assert.Nil(err)
-    assert.Equal(u, uint(2))
+	u, err = r.PeekUint(7, 8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(2))
 
 }

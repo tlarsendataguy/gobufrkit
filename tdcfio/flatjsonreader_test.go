@@ -1,10 +1,9 @@
 package tdcfio_test
 
 import (
-    "testing"
-    assert2 "github.com/seanpont/assert"
-    "strings"
-    "gobufrkit/tdcfio"
+	"github.com/tlarsendataguy/gobufrkit/tdcfio"
+	"strings"
+	"testing"
 )
 
 var jstr = `
@@ -15,94 +14,119 @@ var jstr = `
 `
 
 func TestFlatJsonReader(t *testing.T) {
-    assert := assert2.Assert(t)
+	var (
+		err error
+		b   []byte
+		u   uint
+		i   int
+		q   bool
+		s   *tdcfio.Binary
+	)
 
-    var (
-        err error
-        b []byte
-        u uint
-        i int
-        q bool
-        s *tdcfio.Binary
-    )
+	r := tdcfio.NewFlatJsonReader(strings.NewReader(jstr))
+	b, err = r.ReadBytes(4)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, string(b), "BUFR")
 
-    r := tdcfio.NewFlatJsonReader(strings.NewReader(jstr))
-    b, err = r.ReadBytes(4)
-    assert.Nil(err)
-    assert.Equal(string(b), "BUFR")
+	u, err = r.ReadUint(24)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(94))
 
-    u, err = r.ReadUint(24)
-    assert.Nil(err)
-    assert.Equal(u, uint(94))
+	i, err = r.ReadInt(8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, i, 4)
 
-    i, err = r.ReadInt(8)
-    assert.Nil(err)
-    assert.Equal(i, 4)
+	r.ReadUint(24)
+	r.ReadUint(8)
+	r.ReadUint(16)
+	r.ReadUint(16)
+	r.ReadUint(8)
 
-    r.ReadUint(24)
-    r.ReadUint(8)
-    r.ReadUint(16)
-    r.ReadUint(16)
-    r.ReadUint(8)
+	q, err = r.ReadBool()
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	if q {
+		t.Fatalf(`value should be false`)
+	}
 
-    q, err = r.ReadBool()
-    assert.Nil(err)
-    assert.False(q, "value should be false")
-
-    s, err = r.ReadBinary(7)
-    assert.Nil(err)
-    assert.Equal(s.String(), "0000000")
+	s, err = r.ReadBinary(7)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, s.String(), "0000000")
 }
 
 func TestPeekableFlatJsonReader_PeekBytes(t *testing.T) {
-    assert := assert2.Assert(t)
+	var (
+		err error
+		b   []byte
+		u   uint
+		i   int
+		q   bool
+		s   *tdcfio.Binary
+	)
 
-    var (
-        err error
-        b []byte
-        u uint
-        i int
-        q bool
-        s *tdcfio.Binary
-    )
+	r := tdcfio.NewPeekableFlatJsonReader(strings.NewReader(jstr))
+	b, err = r.PeekBytes(0, 4)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, string(b), "BUFR")
 
-    r := tdcfio.NewPeekableFlatJsonReader(strings.NewReader(jstr))
-    b, err = r.PeekBytes(0, 4)
-    assert.Nil(err)
-    assert.Equal(string(b), "BUFR")
+	u, err = r.PeekUint(3, 24)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(22))
 
-    u, err = r.PeekUint(3, 24)
-    assert.Nil(err)
-    assert.Equal(u, uint(22))
+	b, err = r.ReadBytes(4)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, string(b), "BUFR")
 
-    b, err = r.ReadBytes(4)
-    assert.Nil(err)
-    assert.Equal(string(b), "BUFR")
+	u, err = r.ReadUint(24)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(94))
 
-    u, err = r.ReadUint(24)
-    assert.Nil(err)
-    assert.Equal(u, uint(94))
+	i, err = r.ReadInt(8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, i, 4)
 
-    i, err = r.ReadInt(8)
-    assert.Nil(err)
-    assert.Equal(i, 4)
+	r.ReadUint(24)
+	r.ReadUint(8)
+	r.ReadUint(16)
+	r.ReadUint(16)
+	r.ReadUint(8)
 
-    r.ReadUint(24)
-    r.ReadUint(8)
-    r.ReadUint(16)
-    r.ReadUint(16)
-    r.ReadUint(8)
+	u, err = r.PeekUint(5, 8)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, u, uint(18))
 
-    u, err = r.PeekUint(5, 8)
-    assert.Nil(err)
-    assert.Equal(u, uint(18))
+	q, err = r.ReadBool()
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	if q {
+		t.Fatalf(`value should be false`)
+	}
 
-    q, err = r.ReadBool()
-    assert.Nil(err)
-    assert.False(q, "value should be false")
-
-    s, err = r.ReadBinary(7)
-    assert.Nil(err)
-    assert.Equal(s.String(), "0000000")
-
+	s, err = r.ReadBinary(7)
+	if err != nil {
+		t.Fatalf(`got error %v`, err)
+	}
+	assertEqual(t, s.String(), "0000000")
 }
