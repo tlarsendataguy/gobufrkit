@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadTableB(t *testing.T) {
-	b, err := LoadTableB("../_definitions/tables/0/0/0/25/TableB.csv")
+	b, err := LoadTableB("../_definitions/tables/0/0/0/25/TableB.json")
 	if err != nil {
 		t.Fatalf(`got error %v`, err)
 	}
@@ -20,7 +20,7 @@ func TestLoadTableB(t *testing.T) {
 }
 
 func TestLoadTableD(t *testing.T) {
-	d, err := LoadTableD("../_definitions/tables/0/0/0/25/TableD.csv")
+	d, err := LoadTableD("../_definitions/tables/0/0/0/25/TableD.json")
 	if err != nil {
 		t.Fatalf(`got error %v`, err)
 	}
