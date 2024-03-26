@@ -67,6 +67,10 @@ func (r *ScriptRt) Load(reader io.Reader, chunkName, keyName string) error {
 
 // Get the decoder func from the runtime metatable and execute it
 func (r *ScriptRt) RunDeserializer() (*bufr.Message, error) {
+	err := r.factory.SeekStartSignature()
+	if err != nil {
+		return nil, err
+	}
 	lua.MetaTableNamed(r.state, RUNTIME_METATABLE)
 	r.state.Field(-1, DESERIALIZER)
 	r.state.Remove(-2)
