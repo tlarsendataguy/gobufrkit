@@ -48,12 +48,8 @@ func (c *Cell) StringValue() (string, error) {
 	switch value := c.v.(type) {
 	case string:
 		return value, nil
-	case []uint:
-		data := make([]byte, len(value))
-		for index, char := range value {
-			data[index] = byte(char)
-		}
-		return string(data), nil
+	case []uint8:
+		return string(value), nil
 	default:
 		return "", fmt.Errorf("cell value is not string, but: %T", c.v)
 	}
